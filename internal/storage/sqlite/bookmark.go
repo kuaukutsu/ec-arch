@@ -130,7 +130,7 @@ func (s *sqli) GetByValue(val string) (storage.Bookmark, error) {
 }
 
 func (s *sqli) Delete(uuid uuid.UUID) error {
-	const op = "storage.bookmark.Create"
+	const op = "storage.bookmark.Delete"
 
 	stmt, err := s.db.Prepare(`DELETE FROM bookmark WHERE uuid=?`)
 	if err != nil {
