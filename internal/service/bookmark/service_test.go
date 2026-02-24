@@ -3,6 +3,7 @@ package bookmark
 import (
 	"testing"
 
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/stretchr/testify/require"
 
 	"bookmarks/internal/repository/bookmark"
@@ -14,21 +15,26 @@ func TestAppend_Success(t *testing.T) {
 	repo := bookmark.NewRepository(storage)
 	srv := NewService(repo)
 
-	bookmark, err := srv.Append("test", "value")
+	title := gofakeit.Word()
+	value := gofakeit.CarModel()
+	
+	bookmark, err := srv.Append(title, value)
 	require.NoError(t, err)
-	require.Equal(t, "test", bookmark.Title)
-	require.Equal(t, "value", bookmark.Value)
+	require.Equal(t, title, bookmark.Title)
+	require.Equal(t, value, bookmark.Value)
 }
 
-func TestAppend_NotErrExists(t *testing.T) {
+func TestAppend_ErrExists(t *testing.T) {
 	storage := memory.NewBookmarkStorage()
 	repo := bookmark.NewRepository(storage)
 	srv := NewService(repo)
 
-	entity1, err := srv.Append("test", "value")
+	value := gofakeit.CarModel()
+	
+	_, err := srv.Append(gofakeit.Word(), value)
 	require.NoError(t, err)
 
-	entity2, err := srv.Append("test", "value")
-	require.NoError(t, err)
-	require.Equal(t, entity1.Uuid, entity2.Uuid)
+	_, err = srv.Append(gofakeit.Word(), value)
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrBookmarkExists)
 }

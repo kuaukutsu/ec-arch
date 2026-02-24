@@ -10,7 +10,10 @@ import (
 	"bookmarks/internal/repository"
 )
 
-var ErrBookmarkNotFound = errors.New("bookmark not found")
+var (
+	ErrBookmarkExists = errors.New("bookmark already exists")
+	ErrBookmarkNotFound = errors.New("bookmark not found")
+)
 
 type Repository interface {
 	Create(bookmark model.Bookmark) (model.Bookmark, error)
@@ -34,7 +37,7 @@ func (s *service) Append(title, val string) (model.Bookmark, error) {
 	// exists
 	bookmark, err := s.repo.GetByValue(val)
 	if err == nil {
-		return bookmark, nil
+		return model.Bookmark{}, fmt.Errorf("%s: %w", op, ErrBookmarkExists)
 	}
 
 	if errors.Is(err, repository.ErrNotFound) {

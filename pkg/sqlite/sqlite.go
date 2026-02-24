@@ -57,7 +57,7 @@ func tableSlice() []string {
 			title TEXT NOT NULL,
 			value TEXT NOT NULL,
 			created_at DATETIME NOT NULL);
-		CREATE INDEX IF NOT EXISTS idx_value ON bookmark(value);
+		CREATE UNIQUE INDEX IF NOT EXISTS ui_value ON bookmark(value);
 		`,
 	}
 }

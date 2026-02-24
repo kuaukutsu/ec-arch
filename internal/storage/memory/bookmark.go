@@ -45,6 +45,10 @@ func (db *db) Create(
 	if _, exists := db.table[uuid]; exists {
 		return storage.Bookmark{}, fmt.Errorf("%s: %w", op, repository.ErrExists)
 	}
+	
+	if _, exists := db.uiVal[val]; exists {
+		return storage.Bookmark{}, fmt.Errorf("%s: %w", op, repository.ErrExists)
+	}
 
 	db.table[uuid] = &record
 	db.uiVal[val] = &record
