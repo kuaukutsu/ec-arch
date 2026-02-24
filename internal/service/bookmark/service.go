@@ -37,7 +37,7 @@ func (s *service) Append(title, val string) (model.Bookmark, error) {
 	// exists
 	bookmark, err := s.repo.GetByValue(val)
 	if err == nil {
-		return model.Bookmark{}, fmt.Errorf("%s: %w", op, ErrBookmarkExists)
+		return bookmark, fmt.Errorf("%s: %w", op, ErrBookmarkExists)
 	}
 
 	if errors.Is(err, repository.ErrNotFound) {

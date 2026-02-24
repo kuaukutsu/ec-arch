@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -73,6 +74,13 @@ func (h *bookmarkHandler) Append(w http.ResponseWriter, r *http.Request) {
 	entity, err := h.service.Append(input.Title, input.Value)
 	if err != nil {
 		log.Error(err.Error())
+
+		if errors.Is(err, bookmark.ErrBookmarkExists) {
+			error := fmt.Sprintf("[%s] %s", entity.Uuid, bookmark.ErrBookmarkExists)
+			net.ErrorResponse(w, r, error, http.StatusConflict)
+			return
+		}
+
 		net.ErrorResponse(w, r, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -100,7 +108,7 @@ func (h *bookmarkHandler) View(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 
 		if errors.Is(err, bookmark.ErrBookmarkNotFound) {
-			net.ErrorResponse(w, r, err.Error(), http.StatusNotFound)
+			net.ErrorResponse(w, r, bookmark.ErrBookmarkNotFound.Error(), http.StatusNotFound)
 			return
 		}
 

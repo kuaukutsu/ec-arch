@@ -2,6 +2,7 @@ package v1
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -56,7 +57,13 @@ func (h *bookmarkHandler) Append(ctx *fiber.Ctx) error {
 	entity, err := h.service.Append(input.Title, input.Value)
 	if err != nil {
 		log.Error(err.Error())
-		return router.ErrorResponse(ctx, err.Error(), http.StatusBadRequest)
+
+		if errors.Is(err, bookmark.ErrBookmarkExists) {
+			error := fmt.Sprintf("[%s] %s", entity.Uuid, bookmark.ErrBookmarkExists)
+			return router.ErrorResponse(ctx, error, http.StatusConflict)
+		}
+
+		return router.ErrorResponse(ctx, err.Error(), http.StatusInternalServerError)
 	}
 
 	return ctx.Status(http.StatusCreated).JSON(entity)
@@ -73,7 +80,7 @@ func (h *bookmarkHandler) View(ctx *fiber.Ctx) error {
 		log.Error(err.Error())
 
 		if errors.Is(err, bookmark.ErrBookmarkNotFound) {
-			return router.ErrorResponse(ctx, err.Error(), http.StatusNotFound)
+			return router.ErrorResponse(ctx, bookmark.ErrBookmarkNotFound.Error(), http.StatusNotFound)
 		}
 
 		return router.ErrorResponse(ctx, err.Error(), http.StatusInternalServerError)
