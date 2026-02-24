@@ -113,7 +113,7 @@ func makeFiber(target string, handler fiber.Handler) *fiber.App {
 }
 
 func makeHandler() *bookmarkHandler {
-	storage := memory.NewStorage()
+	storage := memory.NewBookmarkStorage()
 	repository := repo.NewRepository(storage)
 	service := srv.NewService(repository)
 	logger := slog.New(slog.DiscardHandler)

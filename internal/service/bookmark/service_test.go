@@ -10,7 +10,7 @@ import (
 )
 
 func TestAppend_Success(t *testing.T) {
-	storage := memory.NewStorage()
+	storage := memory.NewBookmarkStorage()
 	repo := bookmark.NewRepository(storage)
 	srv := NewService(repo)
 
@@ -21,7 +21,7 @@ func TestAppend_Success(t *testing.T) {
 }
 
 func TestAppend_NotErrExists(t *testing.T) {
-	storage := memory.NewStorage()
+	storage := memory.NewBookmarkStorage()
 	repo := bookmark.NewRepository(storage)
 	srv := NewService(repo)
 

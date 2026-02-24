@@ -14,7 +14,7 @@ import (
 )
 
 func TestCreate_Success(t *testing.T) {
-	storage := memory.NewStorage()
+	storage := memory.NewBookmarkStorage()
 	repo := NewRepository(storage)
 
 	bookmark := makeBookmark()
@@ -101,7 +101,7 @@ func makeBookmark() model.Bookmark {
 }
 
 func makePrepareRepository(bookmark model.Bookmark) *repository {
-	storage := memory.NewStorage()
+	storage := memory.NewBookmarkStorage()
 	repo := NewRepository(storage)
 
 	_, _ = repo.Create(bookmark)
