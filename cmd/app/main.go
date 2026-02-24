@@ -14,9 +14,11 @@ import (
 	bookmarkRepo "bookmarks/internal/repository/bookmark"
 	bookmarkServ "bookmarks/internal/service/bookmark"
 	"bookmarks/internal/storage/memory"
+	"bookmarks/internal/storage/sqlite"
 	"bookmarks/pkg/http"
 	"bookmarks/pkg/http/fiberserver"
 	"bookmarks/pkg/http/netserver"
+	pkgsql "bookmarks/pkg/sqlite"
 )
 
 const (
@@ -34,7 +36,7 @@ func main() {
 
 	log.Debug("app main", slog.Any("config", cfg))
 
-	server := makeServer(log, cfg.HTTPServer)
+	server := makeServer(log, cfg)
 	server.Start()
 
 	// Waiting signal
@@ -75,15 +77,16 @@ func setupLogger(env string) *slog.Logger {
 	return log
 }
 
-func makeServer(log *slog.Logger, cfg config.HTTPServer) http.Server {
+func makeServer(log *slog.Logger, cfg *config.Config) http.Server {
+	service := makeBookmarkService(makePersistenStorage(cfg))
+
 	switch cfg.Type {
 	case servFiber:
-		// handler(service)
 		return fiberserver.New(
 			log,
 			fiber.Register(
 				log,
-				fiberv1.NewHandler(log, makeBookmarkService()),
+				fiberv1.NewHandler(log, service),
 			),
 			fiberserver.Address(cfg.Address),
 			fiberserver.ReadTimeout(cfg.Timeout),
@@ -96,7 +99,7 @@ func makeServer(log *slog.Logger, cfg config.HTTPServer) http.Server {
 			log,
 			net.Register(
 				log,
-				netv1.NewHandler(log, makeBookmarkService()),
+				netv1.NewHandler(log, service),
 			),
 			netserver.Address(cfg.Address),
 			netserver.ReadTimeout(cfg.Timeout),
@@ -107,11 +110,28 @@ func makeServer(log *slog.Logger, cfg config.HTTPServer) http.Server {
 	}
 }
 
-func makeBookmarkService() netv1.Service {
-	// storage [selected]
-	storage := memory.NewStorage()
+func makeBookmarkService(storage bookmarkRepo.Storage) netv1.Service {
 	// repository(storage)
 	repo := bookmarkRepo.NewRepository(storage)
 	// service(repository)
 	return bookmarkServ.NewService(repo)
+}
+
+// nolint:unused
+func makeMapStorage() bookmarkRepo.Storage {
+	return memory.NewBookmarkStorage()
+}
+
+func makePersistenStorage(cfg *config.Config) bookmarkRepo.Storage {
+	driver, err := pkgsql.New(pkgsql.SourceName(cfg.Storage))
+	if err != nil {
+		panic(err)
+	}
+
+	storage, err := sqlite.NewStorage(driver)
+	if err != nil {
+		panic(err)
+	}
+
+	return storage
 }

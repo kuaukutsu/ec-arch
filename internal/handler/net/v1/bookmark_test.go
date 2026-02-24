@@ -60,7 +60,7 @@ func TestAppend_BodyBadRequest(t *testing.T) {
 }
 
 func makeHandler() *bookmarkHandler {
-	storage := memory.NewStorage()
+	storage := memory.NewBookmarkStorage()
 	repository := repo.NewRepository(storage)
 	service := srv.NewService(repository)
 	logger := slog.New(slog.DiscardHandler)

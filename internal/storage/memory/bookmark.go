@@ -17,7 +17,7 @@ type db struct {
 	uiVal map[string]*storage.Bookmark // unique index by value
 }
 
-func NewStorage() *db {
+func NewBookmarkStorage() *db {
 	return &db{
 		table: make(map[uuid.UUID]*storage.Bookmark),
 		uiVal: make(map[string]*storage.Bookmark),
