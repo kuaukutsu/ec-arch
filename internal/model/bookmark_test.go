@@ -23,13 +23,32 @@ func TestNewPrepare_Success(t *testing.T) {
 }
 
 func TestNew_Error(t *testing.T) {
-	_, err := NewBookmark("test", "")
+	tests := []struct {
+		title string
+		value string
+		err   error
+	}{
+		{
+			title: "test",
+			value: "",
+			err:   ErrInvalidValue,
+		},
+		{
+			title: "",
+			value: "value",
+			err:   ErrInvalidTitle,
+		},
+		{
+			title: "",
+			value: "",
+			err:   ErrInvalidTitle,
+		},
+	}
 
-	require.Error(t, err)
-	require.ErrorIs(t, err, ErrInvalidValue)
+	for _, tt := range tests {
+		_, err := NewBookmark(tt.title, tt.value)
 
-	_, err = NewBookmark("", "")
-
-	require.Error(t, err)
-	require.ErrorIs(t, err, ErrInvalidTitle)
+		require.Error(t, err)
+		require.ErrorIs(t, err, tt.err)
+	}
 }
