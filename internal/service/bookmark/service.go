@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	ErrBookmarkExists = errors.New("bookmark already exists")
+	ErrBookmarkExists   = errors.New("bookmark already exists")
 	ErrBookmarkNotFound = errors.New("bookmark not found")
 )
 

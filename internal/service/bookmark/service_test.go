@@ -17,7 +17,7 @@ func TestAppend_Success(t *testing.T) {
 
 	title := gofakeit.Word()
 	value := gofakeit.CarModel()
-	
+
 	bookmark, err := srv.Append(title, value)
 	require.NoError(t, err)
 	require.Equal(t, title, bookmark.Title)
@@ -30,7 +30,7 @@ func TestAppend_ErrExists(t *testing.T) {
 	srv := NewService(repo)
 
 	value := gofakeit.CarModel()
-	
+
 	_, err := srv.Append(gofakeit.Word(), value)
 	require.NoError(t, err)
 
