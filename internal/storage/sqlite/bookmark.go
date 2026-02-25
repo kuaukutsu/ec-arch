@@ -148,13 +148,22 @@ func (s *Sqlite) Delete(uuid uuid.UUID) error {
 
 	defer stmt.Close()
 
-	_, err = stmt.Exec(uuid.String())
+	res, err := stmt.Exec(uuid.String())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return repository.ErrNotFound
 		}
 
 		return fmt.Errorf("%s: %w", op, err)
+	}
+	
+	rowAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	
+	if rowAffected == 0 {
+		return repository.ErrNotFound
 	}
 
 	return nil
