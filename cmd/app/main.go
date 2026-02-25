@@ -78,7 +78,9 @@ func setupLogger(env string) *slog.Logger {
 }
 
 func makeServer(log *slog.Logger, cfg *config.Config) http.Server {
-	service := makeBookmarkService(makePersistenStorage(cfg))
+	storage := makeSqliteStorage(cfg)
+	repository := bookmarkRepo.NewRepository(storage)
+	service := bookmarkServ.NewService(repository)
 
 	switch cfg.Type {
 	case servFiber:
@@ -110,25 +112,18 @@ func makeServer(log *slog.Logger, cfg *config.Config) http.Server {
 	}
 }
 
-func makeBookmarkService(storage bookmarkRepo.Storage) netv1.Service {
-	// repository(storage)
-	repo := bookmarkRepo.NewRepository(storage)
-	// service(repository)
-	return bookmarkServ.NewService(repo)
-}
-
 // nolint:unused
 func makeMapStorage() bookmarkRepo.Storage {
 	return memory.NewBookmarkStorage()
 }
 
-func makePersistenStorage(cfg *config.Config) bookmarkRepo.Storage {
+func makeSqliteStorage(cfg *config.Config) bookmarkRepo.Storage {
 	driver, err := pkgsql.New(pkgsql.SourceName(cfg.Storage))
 	if err != nil {
 		panic(err)
 	}
 
-	storage, err := sqlite.NewStorage(driver)
+	storage, err := sqlite.NewBookmark(driver)
 	if err != nil {
 		panic(err)
 	}

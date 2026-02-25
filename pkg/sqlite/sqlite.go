@@ -7,10 +7,12 @@ import (
 
 type Sqlite struct {
 	driverName, dataSourceName string
-	Instance                   *sql.DB
+	DB                         *sql.DB
 }
 
 func New(options ...Option) (*Sqlite, error) {
+	const op = "sqlite.New"
+
 	sqlite := &Sqlite{
 		driverName: "sqlite3",
 	}
@@ -21,10 +23,10 @@ func New(options ...Option) (*Sqlite, error) {
 
 	db, err := sql.Open(sqlite.driverName, sqlite.dataSourceName)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	sqlite.Instance = db
+	sqlite.DB = db
 
 	return sqlite, nil
 }
@@ -33,7 +35,7 @@ func (s *Sqlite) Migrate() error {
 	const op = "sqlite.Migrate"
 
 	for _, query := range tableSlice() {
-		stmt, err := s.Instance.Prepare(query)
+		stmt, err := s.DB.Prepare(query)
 		if err != nil {
 			return fmt.Errorf("%s: %w", op, err)
 		}

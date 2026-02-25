@@ -14,11 +14,11 @@ import (
 	"bookmarks/pkg/sqlite"
 )
 
-type sqli struct {
+type Sqlite struct {
 	db *sql.DB
 }
 
-func NewStorage(sqlite *sqlite.Sqlite) (*sqli, error) {
+func NewBookmark(sqlite *sqlite.Sqlite) (*Sqlite, error) {
 	const op = "storage.sqlite.New"
 
 	err := sqlite.Migrate()
@@ -26,15 +26,20 @@ func NewStorage(sqlite *sqlite.Sqlite) (*sqli, error) {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return &sqli{db: sqlite.Instance}, nil
+	return &Sqlite{db: sqlite.DB}, nil
 }
 
-func (s *sqli) Create(
+func (s *Sqlite) Create(
 	uuid uuid.UUID,
 	title, val string,
 	time time.Time,
 ) (storage.Bookmark, error) {
 	const op = "storage.bookmark.Create"
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return storage.Bookmark{}, fmt.Errorf("%s: %w", op, err)
+	}
 
 	stmt, err := s.db.Prepare(`
 		INSERT INTO bookmark(uuid, title, value, created_at)
@@ -56,6 +61,10 @@ func (s *sqli) Create(
 		return storage.Bookmark{}, fmt.Errorf("%s: %w", op, err)
 	}
 
+	if err := tx.Commit(); err != nil {
+		return storage.Bookmark{}, fmt.Errorf("%s: %w", op, err)
+	}
+
 	return storage.Bookmark{
 		Uuid:      uuid.String(),
 		Title:     title,
@@ -64,14 +73,14 @@ func (s *sqli) Create(
 	}, nil
 }
 
-func (s *sqli) Update(
+func (s *Sqlite) Update(
 	uuid uuid.UUID,
 	title string,
 ) (storage.Bookmark, error) {
 	return storage.Bookmark{}, nil
 }
 
-func (s *sqli) GetByUUID(uuid uuid.UUID) (storage.Bookmark, error) {
+func (s *Sqlite) GetByUUID(uuid uuid.UUID) (storage.Bookmark, error) {
 	const op = "storage.bookmark.GetByUUID"
 
 	stmt, err := s.db.Prepare("SELECT uuid, title, value, created_at FROM bookmark WHERE uuid = ?")
@@ -100,7 +109,7 @@ func (s *sqli) GetByUUID(uuid uuid.UUID) (storage.Bookmark, error) {
 	return record, nil
 }
 
-func (s *sqli) GetByValue(val string) (storage.Bookmark, error) {
+func (s *Sqlite) GetByValue(val string) (storage.Bookmark, error) {
 	const op = "storage.bookmark.GetByValue"
 
 	stmt, err := s.db.Prepare("SELECT uuid, title, value, created_at FROM bookmark WHERE value = ?")
@@ -129,7 +138,7 @@ func (s *sqli) GetByValue(val string) (storage.Bookmark, error) {
 	return record, nil
 }
 
-func (s *sqli) Delete(uuid uuid.UUID) error {
+func (s *Sqlite) Delete(uuid uuid.UUID) error {
 	const op = "storage.bookmark.Delete"
 
 	stmt, err := s.db.Prepare(`DELETE FROM bookmark WHERE uuid=?`)
