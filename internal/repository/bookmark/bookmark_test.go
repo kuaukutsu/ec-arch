@@ -31,7 +31,7 @@ func TestCreate_Success(t *testing.T) {
 
 func TestCreate_ErrExists(t *testing.T) {
 	bookmark := makeBookmark()
-	
+
 	for _, repo := range makeRepositoryProvider(bookmark) {
 		_, err := repo.Create(bookmark)
 		require.ErrorIs(t, err, core.ErrExists)
@@ -101,7 +101,7 @@ func TestDelete_Success(t *testing.T) {
 
 func TestDelete_NotFound(t *testing.T) {
 	bookmark := makeBookmark()
-	
+
 	for _, repo := range makeRepositoryProvider(bookmark) {
 		uuid7, _ := uuid.NewV7()
 		err := repo.Delete(uuid7)
@@ -121,16 +121,16 @@ func makeBookmark() model.Bookmark {
 
 func makeRepositoryProvider(bookmark model.Bookmark) []*repository {
 	var provider []*repository
-	
+
 	// memory storage
 	repo := NewRepository(memory.NewBookmarkStorage())
 	_, _ = repo.Create(bookmark)
 	provider = append(provider, repo)
-	
+
 	// sqlite storage
 	dbSourceName := "../../../storage/test.db"
-	os.Remove(dbSourceName)
-	
+	_ = os.Remove(dbSourceName)
+
 	driver, err := pkgsql.New(pkgsql.SourceName(dbSourceName))
 	if err != nil {
 		panic(err)

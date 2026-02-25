@@ -3,21 +3,26 @@ package middleware
 import (
 	"log/slog"
 	"strconv"
+	"time"
 
-	"github.com/gofiber/fiber/v2"
-
-	"bookmarks/internal/config"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/requestid"
 )
 
-func Logger(log *slog.Logger) func(c *fiber.Ctx) error {
-	return func(ctx *fiber.Ctx) error {
+func Logger(log *slog.Logger) fiber.Handler {
+	return func(ctx fiber.Ctx) error {
+		start := time.Now()
+
 		err := ctx.Next()
+
+		duration := time.Since(start)
 
 		entry := log.With(
 			slog.String("method", ctx.Method()),
-			slog.String("remote_addr", ctx.Context().RemoteAddr().String()),
-			slog.String("user_agent", string(ctx.Context().UserAgent())),
-			slog.String("request_id", ctx.Locals(config.RequestID).(string)),
+			slog.String("remote_addr", ctx.IP()),
+			slog.String("user_agent", ctx.Get(fiber.HeaderUserAgent)),
+			slog.String("request_id", requestid.FromContext(ctx)),
+			slog.Duration("latency", duration),
 		)
 
 		entry.Info(

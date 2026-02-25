@@ -6,13 +6,13 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/go-chi/render"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/requestid"
 	"github.com/stretchr/testify/require"
 
-	"bookmarks/internal/config"
 	"bookmarks/internal/handler"
 	"bookmarks/internal/model"
 	repo "bookmarks/internal/repository/bookmark"
@@ -31,13 +31,12 @@ func TestAppend_Success(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, target, body)
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем тест (второй аргумент - таймаут в мс, -1 — без таймаута)
-	resp, err := app.Test(req, -1)
+	resp, err := app.Test(req, fiber.TestConfig{
+		Timeout: time.Second,
+	})
 	require.NoError(t, err)
 
-	defer func() {
-		_ = resp.Body.Close()
-	}()
+	defer resp.Body.Close() //nolint:errcheck
 
 	require.Equal(t, http.StatusCreated, resp.StatusCode)
 
@@ -58,13 +57,12 @@ func TestAppend_BodyEmptyError(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, target, body)
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем тест (второй аргумент - таймаут в мс, -1 — без таймаута)
-	resp, err := app.Test(req, -1)
+	resp, err := app.Test(req, fiber.TestConfig{
+		Timeout: time.Second,
+	})
 	require.NoError(t, err)
 
-	defer func() {
-		_ = resp.Body.Close()
-	}()
+	defer resp.Body.Close() //nolint:errcheck
 
 	require.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
@@ -85,13 +83,12 @@ func TestAppend_BodyBadRequest(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, target, body)
 	req.Header.Set("Content-Type", "application/json")
 
-	// Выполняем тест (второй аргумент - таймаут в мс, -1 — без таймаута)
-	resp, err := app.Test(req, -1)
+	resp, err := app.Test(req, fiber.TestConfig{
+		Timeout: time.Second,
+	})
 	require.NoError(t, err)
 
-	defer func() {
-		_ = resp.Body.Close()
-	}()
+	defer resp.Body.Close() //nolint:errcheck
 
 	require.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
@@ -103,9 +100,7 @@ func TestAppend_BodyBadRequest(t *testing.T) {
 
 func makeFiber(target string, handler fiber.Handler) *fiber.App {
 	app := fiber.New()
-	app.Use(requestid.New(requestid.Config{
-		ContextKey: config.RequestID,
-	}))
+	app.Use(requestid.New())
 
 	app.Post(target, handler)
 

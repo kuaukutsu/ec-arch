@@ -3,15 +3,15 @@ package fiber
 import (
 	"net/http"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/requestid"
 
-	"bookmarks/internal/config"
 	"bookmarks/internal/handler"
 )
 
-func ErrorResponse(ctx *fiber.Ctx, err string, code int) error {
+func ErrorResponse(ctx fiber.Ctx, err string, code int) error {
 	errCtx := &handler.ErrorContext{
-		RequestID: ctx.Locals(config.RequestID).(string),
+		RequestID: requestid.FromContext(ctx),
 	}
 
 	if code >= 500 {

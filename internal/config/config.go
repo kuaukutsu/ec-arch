@@ -12,8 +12,7 @@ import (
 type contextKey uint
 
 const (
-	RequestID contextKey = iota
-	FieldUUID
+	FieldUUID contextKey = iota
 )
 
 type Config struct {

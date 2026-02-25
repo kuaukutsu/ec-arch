@@ -7,9 +7,9 @@ import (
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/requestid"
 
-	"bookmarks/internal/config"
 	router "bookmarks/internal/handler/fiber"
 	"bookmarks/internal/model"
 	"bookmarks/internal/service/bookmark"
@@ -36,15 +36,15 @@ func NewHandler(l *slog.Logger, s Service) *bookmarkHandler {
 	}
 }
 
-func (h *bookmarkHandler) Append(ctx *fiber.Ctx) error {
+func (h *bookmarkHandler) Append(ctx fiber.Ctx) error {
 	var input CreateBookmarkRequest
 
 	log := h.logger.With(
 		slog.String("op", "handler.v1.bookmark.Append"),
-		slog.String("request_id", ctx.Locals(config.RequestID).(string)),
+		slog.String("request_id", requestid.FromContext(ctx)),
 	)
 
-	if err := ctx.BodyParser(&input); err != nil {
+	if err := ctx.Bind().Body(&input); err != nil {
 		log.Error(err.Error())
 		return router.ErrorResponse(ctx, err.Error(), http.StatusBadRequest)
 	}
@@ -69,10 +69,10 @@ func (h *bookmarkHandler) Append(ctx *fiber.Ctx) error {
 	return ctx.Status(http.StatusCreated).JSON(entity)
 }
 
-func (h *bookmarkHandler) View(ctx *fiber.Ctx) error {
+func (h *bookmarkHandler) View(ctx fiber.Ctx) error {
 	log := h.logger.With(
 		slog.String("op", "handler.v1.bookmark.View"),
-		slog.String("request_id", ctx.Locals(config.RequestID).(string)),
+		slog.String("request_id", requestid.FromContext(ctx)),
 	)
 
 	entity, err := h.service.View(ctx.Params("uuid"))
@@ -89,14 +89,14 @@ func (h *bookmarkHandler) View(ctx *fiber.Ctx) error {
 	return ctx.Status(http.StatusOK).JSON(entity)
 }
 
-func (h *bookmarkHandler) Change(ctx *fiber.Ctx) error {
+func (h *bookmarkHandler) Change(ctx fiber.Ctx) error {
 	return ctx.SendString("Change")
 }
 
-func (h *bookmarkHandler) Delete(ctx *fiber.Ctx) error {
+func (h *bookmarkHandler) Delete(ctx fiber.Ctx) error {
 	log := h.logger.With(
 		slog.String("op", "handler.v1.bookmark.Delete"),
-		slog.String("request_id", ctx.Locals(config.RequestID).(string)),
+		slog.String("request_id", requestid.FromContext(ctx)),
 	)
 
 	if err := h.service.Delete(ctx.Params("uuid")); err != nil {
