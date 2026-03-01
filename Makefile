@@ -25,6 +25,12 @@ run: fmt ## Run gRPC server
 tests: ## Run Tests
 	go test ./internal/...
 	
+swag:
+	docker run --init --rm -it \
+	    -v "$$(pwd):/code" \
+	    ghcr.io/swaggo/swag:latest \
+	    init -g internal/handler/fiber/router.go -d /code -o /code/docs
+	
 _golangci_lint_install:
 	[ -f $(GOBIN)/golangci-lint ] || GOBIN=$(GOBIN) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 

@@ -7,7 +7,9 @@ import (
 	"github.com/gofiber/contrib/v3/swaggo"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/requestid"
+	"github.com/swaggo/swag"
 
+	"bookmarks/docs"
 	"bookmarks/internal/handler/fiber/middleware"
 )
 
@@ -18,24 +20,26 @@ type BookmarkHandler interface {
 	Delete(ctx fiber.Ctx) error
 }
 
-// Register -.
 // Swagger spec:
 // @title       Go Example REST API
 // @version     1.0
-// @host        localhost:8080
+// @host        localhost:8082
 // @BasePath    /v1
 func Register(
 	log *slog.Logger,
 	bookmarkHnd BookmarkHandler,
 ) func(s *fiber.App) {
+	swag.Register(swag.Name, docs.SwaggerInfo)
+
 	return func(s *fiber.App) {
 		s.Use(requestid.New())
 		s.Use(middleware.Logger(log))
 
 		s.Get("/health", healthHandler)
-		s.Get("/swagger/*", swaggo.HandlerDefault)
 
 		v1 := s.Group("/v1")
+
+		v1.Get("/swagger/*", swaggo.New(swaggo.Config{}))
 
 		bookmark := v1.Group("/bookmark")
 		bookmark.Post("/append", bookmarkHnd.Append)

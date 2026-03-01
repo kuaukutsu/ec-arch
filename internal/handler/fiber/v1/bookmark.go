@@ -36,6 +36,15 @@ func NewHandler(l *slog.Logger, s Service) *bookmarkHandler {
 	}
 }
 
+// @Summary     Append bookmark
+// @Description Append bookmark to collection
+// @ID          append
+// @Tags  	    bookmark
+// @Accept      json
+// @Produce     json
+// @Success     200 {object} model.Bookmark
+// @Failure     500 {object} handler.ErrorResponse
+// @Router      /bookmark/append [post]
 func (h *bookmarkHandler) Append(ctx fiber.Ctx) error {
 	var input CreateBookmarkRequest
 
@@ -69,6 +78,16 @@ func (h *bookmarkHandler) Append(ctx fiber.Ctx) error {
 	return ctx.Status(http.StatusCreated).JSON(entity)
 }
 
+// @Summary     Show bookmark
+// @Description Show info bookmark
+// @ID          view
+// @Tags  	    bookmark
+// @Accept      json
+// @Produce     json
+// @Param       uuid   path      string  true  "Bookmark UUID"
+// @Success     200 {object} model.Bookmark
+// @Failure     500 {object} handler.ErrorResponse
+// @Router      /bookmark/{uuid} [get]
 func (h *bookmarkHandler) View(ctx fiber.Ctx) error {
 	log := h.logger.With(
 		slog.String("op", "handler.v1.bookmark.View"),

@@ -1,0 +1,79 @@
+basePath: /v1
+definitions:
+  handler.ErrorContext:
+    properties:
+      request_id:
+        type: string
+    type: object
+  handler.ErrorResponse:
+    properties:
+      context:
+        $ref: '#/definitions/handler.ErrorContext'
+      error:
+        type: string
+    type: object
+  model.Bookmark:
+    properties:
+      createdAt:
+        type: string
+      title:
+        type: string
+      uuid:
+        type: string
+      value:
+        description: основное значение, которое нужно запомнить
+        type: string
+    type: object
+host: localhost:8082
+info:
+  contact: {}
+  title: Go Example REST API
+  version: "1.0"
+paths:
+  /bookmark/{uuid}:
+    get:
+      consumes:
+      - application/json
+      description: Show info bookmark
+      operationId: view
+      parameters:
+      - description: Bookmark UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Bookmark'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Show bookmark
+      tags:
+      - bookmark
+  /bookmark/append:
+    post:
+      consumes:
+      - application/json
+      description: Append bookmark to collection
+      operationId: append
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Bookmark'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Append bookmark
+      tags:
+      - bookmark
+swagger: "2.0"
