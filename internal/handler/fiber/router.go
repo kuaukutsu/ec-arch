@@ -39,7 +39,7 @@ func Register(
 
 		v1 := s.Group("/v1")
 
-		v1.Get("/swagger/*", swaggo.New(swaggo.Config{}))
+		v1.Get("/swagger/*", swaggo.HandlerDefault)
 
 		bookmark := v1.Group("/bookmark")
 		bookmark.Post("/append", bookmarkHnd.Append)
